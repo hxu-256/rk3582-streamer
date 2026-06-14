@@ -9,7 +9,10 @@
       "Bash(python3 camera_server.py --width 1280 --height 720 --mjpeg-width 640 --mjpeg-height 360 --port 8080)",
       "Read(//tmp/claude-1000/-home-radxa-workspace-rockpi-camera/**)",
       "Bash(python3 /home/radxa/workspace/rockpi_camera/camera_server.py --width 1280 --height 720 --mjpeg-width 640 --mjpeg-height 360 --port 8080 --tcp-port 8554)",
-      "Bash(echo \"PID $!\")"
+      "Bash(echo \"PID $!\")",
+      "Bash(mkdir -p /home/radxa/workspace/rockpi_camera/archive)",
+      "Bash(mv /home/radxa/workspace/rockpi_camera/camera_demo.py /home/radxa/workspace/rockpi_camera/archive/)",
+      "Bash(mv /home/radxa/workspace/rockpi_camera/camera_server.py /home/radxa/workspace/rockpi_camera/archive/)"
     ]
   }
 }
