@@ -1,4 +1,7 @@
 *.png
 *.jpg
 *.mp4
-
+*.crt
+*.key
+recordings/
+snapshots/

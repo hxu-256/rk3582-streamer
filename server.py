@@ -22,9 +22,11 @@ import tornado.web
 BASE     = Path(__file__).parent
 SNAPS    = BASE / 'snapshots'
 RECS     = BASE / 'recordings'
-MEDIAMTX = '/home/radxa/Downloads/mediamtx/mediamtx'
-MTX_CONF = '/home/radxa/Downloads/mediamtx/mediamtx.yml'
-DEVICE   = '/dev/video11'
+MEDIAMTX     = '/home/radxa/Downloads/mediamtx/mediamtx'
+MTX_CONF     = '/home/radxa/Downloads/mediamtx/mediamtx.yml'
+DEVICE       = '/dev/video11'
+NPU_PYTHON   = '/home/radxa/miniconda3/envs/rknn311/bin/python'
+NPU_SCRIPT   = str(BASE / 'npu_stream.py')
 
 PROFILES = {
     '720p': ('1280x720',  'h264_rkmpp', '4M'),
@@ -66,10 +68,29 @@ def launch_mediamtx():
     print(f'[mtx] started PID {_mtx.pid}')
 
 
-def launch_stream(res):
+def launch_stream(res, npu=False):
     global _cam, _res
     _res = res
     size, codec, bitrate = PROFILES[res]
+    if npu:
+        # /dev/video11 only supports one capture consumer — npu_stream.py's
+        # cv2.VideoCapture replaces this function's normal direct v4l2 ffmpeg
+        # input. The NPU model always resizes an internal copy to 640x640
+        # regardless of `res`; boxes get remapped back onto the native
+        # resolution requested here, which also sets the streamed/encoded size.
+        width, height = size.split('x')
+        if res == '4k':
+            print('[cam] warning: 4K + NPU is untested — every frame gets several '
+                  'full-resolution Python-side copies on a 2GB board, unlike the '
+                  'pure-GStreamer 4K pipeline this board has confirmed stable')
+        _cam = subprocess.Popen([
+            NPU_PYTHON, NPU_SCRIPT,
+            '--rtsp', 'rtsp://127.0.0.1:8554/camera',
+            '--bitrate', bitrate,
+            '--width', width, '--height', height,
+        ], cwd=str(BASE), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        print(f'[cam] NPU stream started PID {_cam.pid} ({size})')
+        return
     _cam = subprocess.Popen([
         'ffmpeg',
         '-f', 'v4l2', '-use_wallclock_as_timestamps', '1', '-r', '17',
@@ -344,12 +365,14 @@ def main():
     ap = argparse.ArgumentParser(description='Rockchip camera web server')
     ap.add_argument('--res',  default='720p', choices=PROFILES, help='stream resolution')
     ap.add_argument('--port', type=int, default=8080, help='web UI port')
+    ap.add_argument('--npu',  action='store_true',
+                     help='run YOLOv5 NPU detection and stream the annotated feed instead of raw camera')
     args = ap.parse_args()
 
     print('[init] starting mediamtx…')
     launch_mediamtx()
-    print(f'[init] starting {args.res} stream…')
-    launch_stream(args.res)
+    print(f'[init] starting {args.res} stream{" (NPU)" if args.npu else ""}…')
+    launch_stream(args.res, npu=args.npu)
 
     ip   = _local_ip()
     html = _make_html(ip, args.res)
