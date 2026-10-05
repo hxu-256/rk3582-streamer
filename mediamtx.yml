@@ -1,0 +1,4 @@
+# Minimal mediamtx config — everything else uses mediamtx defaults
+# (RTSP :8554, WebRTC :8889, HLS :8888). ffmpeg publishes to /camera.
+paths:
+  all_others:

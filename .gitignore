@@ -1,7 +1,17 @@
+# captures
 *.png
 *.jpg
 *.mp4
-*.crt
-*.key
 recordings/
 snapshots/
+
+# TLS material — never commit
+*.crt
+*.key
+
+# python
+__pycache__/
+*.pyc
+
+# local tooling
+.claude/settings.local.json

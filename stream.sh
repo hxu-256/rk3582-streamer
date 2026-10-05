@@ -7,9 +7,9 @@
 #         Connect with: vlc rtsp://<ip>:8554/camera
 #         or browser HLS: http://<ip>:8888/camera
 
-MEDIAMTX=/home/radxa/Downloads/mediamtx/mediamtx
-MEDIAMTX_CONF=/home/radxa/Downloads/mediamtx/mediamtx.yml
-DEVICE=/dev/video11
+MEDIAMTX=${MEDIAMTX:-mediamtx}
+MEDIAMTX_CONF=${MTX_CONF:-$(dirname "$0")/mediamtx.yml}
+DEVICE=${CAMERA_DEVICE:-/dev/video11}
 
 case "${1:-720p}" in
   720p)

@@ -107,7 +107,7 @@ The Mali GPU on RK3582 has no working open-source driver at this time. X11 falls
     Compiled for RK3588 but loads and runs fine on this RK3582 — confirmed empirically, same
     NPU IP block.
 - `npu_stream.py` — the actual pipeline: `cv2.VideoCapture("/dev/video11")` → `rknnPoolExecutor`
-  (`TPEs=1` default, `--tpes {1,2,3}` to change) → annotated frames piped as raw BGR24 into an
+  (`TPEs=1`, hardcoded in `npu_stream.py`) → annotated frames piped as raw BGR24 into an
   `ffmpeg -f rawvideo -i - -c:v h264_rkmpp ... -f rtsp` subprocess, publishing to the same
   `rtsp://127.0.0.1:8554/camera` mediamtx already serves. `--width`/`--height` (default
   1280×720) set both the requested capture resolution and the encoded/streamed size — the NPU
@@ -118,8 +118,13 @@ The Mali GPU on RK3582 has no working open-source driver at this time. X11 falls
 ### Environment
 - Conda env **`rknn311`** (`/home/radxa/miniconda3/envs/rknn311/bin/python`) has both `cv2`
   4.13.0 and `rknn_toolkit_lite2`/`rknnlite` 2.3.2 — the only env with both. `server.py`'s
-  `--npu` path shells out to this interpreter explicitly (`NPU_PYTHON` constant) since
-  `server.py` itself runs under a different env (has tornado, not cv2/rknnlite).
+  `--npu` path shells out to the interpreter in the `NPU_PYTHON` env var (defaults to
+  `sys.executable`) since `server.py` itself runs under a different env (has tornado, not
+  cv2/rknnlite). **On this board, run with
+  `NPU_PYTHON=/home/radxa/miniconda3/envs/rknn311/bin/python`** or `--npu` will fail to import.
+- `mediamtx` v1.19.1 binary lives in `~/Downloads/mediamtx/`, symlinked to
+  `~/.local/bin/mediamtx` so `server.py`/`stream.sh` find it on `PATH` (override: `MEDIAMTX=`).
+  Config is the repo's minimal `mediamtx.yml` (override: `MTX_CONF=`).
 - `ffmpeg` (`/usr/local/bin/ffmpeg`, the `nyanmisaka/ffmpeg-rockchip` build — source still at
   `~/Downloads/ffmpeg-rockchip`) is a system binary usable from any env.
 

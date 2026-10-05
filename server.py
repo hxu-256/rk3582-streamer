@@ -9,6 +9,8 @@ NEVER run from a KDE terminal — use SSH or systemd.
 
 import argparse
 import asyncio
+import os
+import shutil
 import signal
 import subprocess
 import sys
@@ -22,10 +24,12 @@ import tornado.web
 BASE     = Path(__file__).parent
 SNAPS    = BASE / 'snapshots'
 RECS     = BASE / 'recordings'
-MEDIAMTX     = '/home/radxa/Downloads/mediamtx/mediamtx'
-MTX_CONF     = '/home/radxa/Downloads/mediamtx/mediamtx.yml'
-DEVICE       = '/dev/video11'
-NPU_PYTHON   = '/home/radxa/miniconda3/envs/rknn311/bin/python'
+# Override via env vars; defaults assume mediamtx is on PATH and the NPU deps
+# (cv2 + rknnlite) are importable by the interpreter running this script.
+MEDIAMTX     = os.environ.get('MEDIAMTX') or shutil.which('mediamtx') or 'mediamtx'
+MTX_CONF     = os.environ.get('MTX_CONF', str(BASE / 'mediamtx.yml'))
+DEVICE       = os.environ.get('CAMERA_DEVICE', '/dev/video11')
+NPU_PYTHON   = os.environ.get('NPU_PYTHON', sys.executable)
 NPU_SCRIPT   = str(BASE / 'npu_stream.py')
 
 PROFILES = {
