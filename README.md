@@ -1,4 +1,4 @@
-# rockpi_camera
+# rk3582 camera streamer with yolov5
 
 Hardware-encoded camera streaming with optional on-device YOLOv5 object detection for the
 **Radxa ROCK 5C (Rockchip RK3582, 2 GB RAM)**.
